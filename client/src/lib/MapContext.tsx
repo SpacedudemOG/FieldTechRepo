@@ -5,19 +5,6 @@ import { PhotoWithTags } from '@shared/schema';
 // Import Leaflet CSS
 import 'leaflet/dist/leaflet.css';
 
-// Fix the Leaflet icon path issue
-import icon from 'leaflet/dist/images/marker-icon.png';
-import iconShadow from 'leaflet/dist/images/marker-shadow.png';
-
-// Fix Leaflet default icon issue
-let DefaultIcon = L.icon({
-  iconUrl: icon,
-  shadowUrl: iconShadow,
-  iconSize: [25, 41],
-  iconAnchor: [12, 41]
-});
-L.Marker.prototype.options.icon = DefaultIcon;
-
 interface MapContextValue {
   map: L.Map | null;
   mapContainer: React.RefObject<HTMLDivElement> | null;
@@ -47,6 +34,18 @@ export const MapContextProvider = ({ children }: { children: ReactNode }) => {
   const [mapLoaded, setMapLoaded] = useState(false);
   const [markers, setMarkers] = useState<L.Marker[]>([]);
   const [markerLayer, setMarkerLayer] = useState<L.LayerGroup | null>(null);
+  
+  // Fix Leaflet icon issue in client-side rendering
+  useEffect(() => {
+    // Fix the Leaflet default icon issue that occurs in bundled environments
+    delete (L.Icon.Default.prototype as any)._getIconUrl;
+    
+    L.Icon.Default.mergeOptions({
+      iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
+      iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
+      shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+    });
+  }, []);
 
   // Set map container ref
   const setMapContainer = (ref: React.RefObject<HTMLDivElement>) => {
