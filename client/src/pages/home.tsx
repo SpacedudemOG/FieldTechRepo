@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import { Link } from 'wouter';
 import Layout from '@/components/Layout';
-import PhotoMap from '@/components/PhotoMap';
+import StaticPhotoMap from '@/components/StaticPhotoMap';
 import PhotoList from '@/components/PhotoList';
 import PhotoDetailModal from '@/components/PhotoDetailModal';
 import UploadModal from '@/components/UploadModal';
 import usePhotoStorage from '@/hooks/usePhotoStorage';
 import { PhotoWithTags } from '@shared/schema';
-import { useMap } from '@/lib/MapContext';
 import { Helmet } from 'react-helmet';
 import { BarChart } from 'lucide-react';
 
@@ -24,16 +23,9 @@ export default function Home() {
     clearFilters 
   } = usePhotoStorage();
   
-  const { flyToPhoto } = useMap();
-  
   const handlePhotoClick = (photo: PhotoWithTags) => {
     setSelectedPhoto(photo);
     setIsDetailModalOpen(true);
-    
-    // If the photo has coordinates, fly to it on the map
-    if (photo.latitude && photo.longitude) {
-      flyToPhoto(photo);
-    }
   };
   
   const handleCloseDetail = () => {
@@ -103,9 +95,10 @@ export default function Home() {
         <main className="flex flex-col md:flex-row flex-1 overflow-hidden">
           {/* Conditionally show map or photos on mobile based on active tab */}
           <div className={`${activeTab === 'map' ? 'block' : 'hidden'} md:block md:flex md:flex-1`}>
-            <PhotoMap 
+            <StaticPhotoMap 
               photos={photos || []} 
-              loading={isLoading} 
+              loading={isLoading}
+              onPhotoClick={handlePhotoClick}
             />
           </div>
           

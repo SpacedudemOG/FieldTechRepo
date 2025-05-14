@@ -1,7 +1,6 @@
 import { Switch, Route } from "wouter";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { MapContextProvider } from "@/lib/MapContext";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import Dashboard from "@/pages/dashboard";
@@ -18,12 +17,10 @@ function Router() {
 
 function App() {
   return (
-    <MapContextProvider>
-      <TooltipProvider>
-        <Router />
-        <Toaster />
-      </TooltipProvider>
-    </MapContextProvider>
+    <TooltipProvider>
+      <Router />
+      <Toaster />
+    </TooltipProvider>
   );
 }
 
