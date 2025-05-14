@@ -29,7 +29,7 @@ const PhotoList = ({
   };
 
   return (
-    <div className="h-1/2 md:h-full md:w-1/3 bg-white border-t md:border-t-0 md:border-l border-gray-200 flex flex-col">
+    <div className="h-screen-minus-header w-full md:w-1/3 bg-white border-t md:border-t-0 md:border-l border-gray-200 flex flex-col">
       {/* Filter Panel - visible on desktop or when toggle is active */}
       <div className={`md:block ${isFilterVisible ? 'block' : 'hidden'}`}>
         <FilterPanel 

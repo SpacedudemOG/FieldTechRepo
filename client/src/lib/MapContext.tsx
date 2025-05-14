@@ -2,9 +2,9 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import mapboxgl from 'mapbox-gl';
 import { PhotoWithTags } from '@shared/schema';
 
-// Setup mapbox access token - using a direct token for demo purposes
+// Setup mapbox access token - using public token for demo purposes
 // In production, you would use a more secure method for managing tokens
-const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1IjoiZnRlY2gtc3lzdGVtIiwiYSI6ImNsc2p3Z2ZrMjEyZXEyam8wMXdpNnVkYnkifQ.XBsfOsLM4g7JPITBb4d6Pg';
+const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4M29iazA2Z2gycXA4N2pmbDZmangifQ.-g_vE53SD2WrJ6tFX7QHmA';
 
 // Set the token for mapbox
 mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
@@ -49,7 +49,7 @@ export const MapContextProvider = ({ children }: { children: ReactNode }) => {
 
     const newMap = new mapboxgl.Map({
       container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/light-v10',
+      style: 'mapbox://styles/mapbox/streets-v11', // Using a standard style 
       center: [-96, 37.8], // Center on US
       zoom: 3,
     });

@@ -27,7 +27,7 @@ const PhotoMap = ({ photos, loading }: PhotoMapProps) => {
   }, [photos, addMarkers, mapLoaded]);
 
   return (
-    <div className="h-1/2 md:h-full md:w-2/3 relative">
+    <div className="h-screen-minus-header w-full md:w-2/3 relative">
       {/* Map container */}
       <div ref={mapRef} className="map-container" />
 

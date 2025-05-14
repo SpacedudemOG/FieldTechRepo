@@ -100,14 +100,14 @@ export default function Home() {
 
         <main className="flex flex-col md:flex-row flex-1 overflow-hidden">
           {/* Conditionally show map or photos on mobile based on active tab */}
-          <div className={`md:block ${activeTab === 'map' ? 'block' : 'hidden'}`}>
+          <div className={`${activeTab === 'map' ? 'block' : 'hidden'} md:block md:flex md:flex-1`}>
             <PhotoMap 
               photos={photos || []} 
               loading={isLoading} 
             />
           </div>
           
-          <div className={`md:block ${activeTab === 'photos' ? 'block' : 'hidden'}`}>
+          <div className={`${activeTab === 'photos' ? 'block' : 'hidden'} md:block md:flex md:flex-1`}>
             <PhotoList 
               photos={photos || []} 
               loading={isLoading}

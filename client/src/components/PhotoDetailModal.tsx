@@ -64,7 +64,7 @@ const PhotoDetailModal = ({ isOpen, onClose, photo }: PhotoDetailModalProps) => 
     
     const map = new mapboxgl.Map({
       container: detailMapRef.current,
-      style: 'mapbox://styles/mapbox/light-v10',
+      style: 'mapbox://styles/mapbox/streets-v11',
       center: [lng, lat],
       zoom: 12,
       interactive: false
