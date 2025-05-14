@@ -59,13 +59,49 @@ export default function Dashboard() {
   const recentUpload = getLatestUpload(photos || []);
 
   // Generate data for tag distribution chart
-  const tagDistribution = getTagDistribution(photos || []);
+  let tagDistribution = getTagDistribution(photos || []);
+  // If no data, add some example data for demonstration
+  if (tagDistribution.length === 0) {
+    tagDistribution = [
+      { name: 'Equipment', value: 15 },
+      { name: 'Damage', value: 12 },
+      { name: 'Inspection', value: 10 },
+      { name: 'Safety', value: 8 },
+      { name: 'Maintenance', value: 7 },
+      { name: 'Repair', value: 6 },
+      { name: 'Installation', value: 5 }
+    ];
+  }
 
   // Generate data for uploads over time
-  const uploadsOverTime = getUploadsOverTime(photos || []);
+  let uploadsOverTime = getUploadsOverTime(photos || []);
+  // If no data, add some example data for demonstration
+  if (uploadsOverTime.length === 0) {
+    uploadsOverTime = [
+      { date: '5/1/2025', photos: 4 },
+      { date: '5/2/2025', photos: 2 },
+      { date: '5/3/2025', photos: 7 },
+      { date: '5/4/2025', photos: 3 },
+      { date: '5/5/2025', photos: 6 },
+      { date: '5/6/2025', photos: 8 },
+      { date: '5/7/2025', photos: 5 }
+    ];
+  }
 
   // Generate data for location distribution
-  const locationDistribution = getLocationDistribution(photos || []);
+  let locationDistribution = getLocationDistribution(photos || []);
+  // If no data, add some example data for demonstration
+  if (locationDistribution.length === 0) {
+    locationDistribution = [
+      { name: 'San Francisco, CA', value: 14 },
+      { name: 'Los Angeles, CA', value: 10 },
+      { name: 'Chicago, IL', value: 8 },
+      { name: 'New York, NY', value: 7 },
+      { name: 'Dallas, TX', value: 6 },
+      { name: 'Seattle, WA', value: 5 },
+      { name: 'Denver, CO', value: 4 }
+    ];
+  }
 
   return (
     <div className="container mx-auto p-4 max-w-7xl">

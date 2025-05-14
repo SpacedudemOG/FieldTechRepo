@@ -178,11 +178,11 @@ export default function Home() {
             <span className="text-xs mt-1">Filter</span>
           </button>
           
-          <Link href="/dashboard">
-            <a className="flex flex-col items-center justify-center w-1/5 py-1 text-gray-500 hover:text-primary">
+          <Link to="/dashboard">
+            <div className="flex flex-col items-center justify-center w-1/5 py-1 text-gray-500 hover:text-primary">
               <BarChart className="h-5 w-5" />
               <span className="text-xs mt-1">Dashboard</span>
-            </a>
+            </div>
           </Link>
         </nav>
 
