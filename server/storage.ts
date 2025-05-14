@@ -44,6 +44,79 @@ export class MemStorage implements IStorage {
   private currentPhotoId: number;
   private currentTagId: number;
   private currentPhotoTagId: number;
+  
+  // Initialize sample data for testing
+  private initializeSampleData = async () => {
+    // Create sample tags
+    const electricalTag = await this.createTag({ name: 'Electrical', aiGenerated: true, confidence: 0.95 });
+    const structuralTag = await this.createTag({ name: 'Structural', aiGenerated: true, confidence: 0.92 });
+    const plumbingTag = await this.createTag({ name: 'Plumbing', aiGenerated: true, confidence: 0.89 });
+    const hvacTag = await this.createTag({ name: 'HVAC', aiGenerated: true, confidence: 0.94 });
+    const safetyTag = await this.createTag({ name: 'Safety', aiGenerated: true, confidence: 0.97 });
+    const maintenanceTag = await this.createTag({ name: 'Maintenance', aiGenerated: true, confidence: 0.91 });
+    
+    // Create sample photos with GPS coordinates
+    const photo1 = await this.createPhoto({
+      title: 'Electrical Panel Inspection',
+      fileName: 'electrical_panel.jpg',
+      fileSize: 2048,
+      fileType: 'image/jpeg',
+      base64Data: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAIBAQIBAQICAgICAgICAwUDAwMDAwYEBAMFBwYHBwcGBwcICQsJCAgKCAcHCg0KCgsMDAwMBwkODw0MDgsMDAz/2wBDAQICAgMDAwYDAwYMCAcIDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAz/wAARCAABAAEDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD9/KKKKAP/2Q==',
+      latitude: '37.7749',
+      longitude: '-122.4194',
+      location: 'San Francisco Office',
+      notes: 'Annual inspection of the main electrical panel',
+      userId: 1
+    });
+    
+    const photo2 = await this.createPhoto({
+      title: 'Broken HVAC Unit',
+      fileName: 'hvac_damage.jpg',
+      fileSize: 1536,
+      fileType: 'image/jpeg',
+      base64Data: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAIBAQIBAQICAgICAgICAwUDAwMDAwYEBAMFBwYHBwcGBwcICQsJCAgKCAcHCg0KCgsMDAwMBwkODw0MDgsMDAz/2wBDAQICAgMDAwYDAwYMCAcIDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAz/wAARCAABAAEDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD9/KKKKAP/2Q==',
+      latitude: '37.7833',
+      longitude: '-122.4167',
+      location: 'Oakland Site',
+      notes: 'Commercial HVAC unit with damaged cooling coil',
+      userId: 1
+    });
+    
+    const photo3 = await this.createPhoto({
+      title: 'Water Leak in Ceiling',
+      fileName: 'water_leak.jpg',
+      fileSize: 1789,
+      fileType: 'image/jpeg',
+      base64Data: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAIBAQIBAQICAgICAgICAwUDAwMDAwYEBAMFBwYHBwcGBwcICQsJCAgKCAcHCg0KCgsMDAwMBwkODw0MDgsMDAz/2wBDAQICAgMDAwYDAwYMCAcIDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAz/wAARCAABAAEDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD9/KKKKAP/2Q==',
+      latitude: '37.7694',
+      longitude: '-122.4862',
+      location: 'Sunset District',
+      notes: 'Water damage from pipe leak in office ceiling',
+      userId: 1
+    });
+    
+    const photo4 = await this.createPhoto({
+      title: 'Safety Rail Installation',
+      fileName: 'safety_rails.jpg',
+      fileSize: 2156,
+      fileType: 'image/jpeg',
+      base64Data: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAIBAQIBAQICAgICAgICAwUDAwMDAwYEBAMFBwYHBwcGBwcICQsJCAgKCAcHCg0KCgsMDAwMBwkODw0MDgsMDAz/2wBDAQICAgMDAwYDAwYMCAcIDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAz/wAARCAABAAEDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD9/KKKKAP/2Q==',
+      latitude: '37.8044',
+      longitude: '-122.2711',
+      location: 'Berkeley Campus',
+      notes: 'New safety rails installed on loading dock',
+      userId: 1
+    });
+    
+    // Add tags to photos
+    await this.addTagToPhoto(photo1.id, electricalTag.id);
+    await this.addTagToPhoto(photo1.id, maintenanceTag.id);
+    await this.addTagToPhoto(photo2.id, hvacTag.id);
+    await this.addTagToPhoto(photo3.id, plumbingTag.id);
+    await this.addTagToPhoto(photo3.id, structuralTag.id);
+    await this.addTagToPhoto(photo4.id, safetyTag.id);
+    await this.addTagToPhoto(photo4.id, structuralTag.id);
+  }
 
   constructor() {
     this.users = new Map();
@@ -54,6 +127,9 @@ export class MemStorage implements IStorage {
     this.currentPhotoId = 1;
     this.currentTagId = 1;
     this.currentPhotoTagId = 1;
+    
+    // Initialize with sample data
+    this.initializeSampleData();
   }
 
   // User methods
