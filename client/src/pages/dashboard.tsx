@@ -26,14 +26,24 @@ import {
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Camera, Map, Tag, Calendar, Download } from 'lucide-react';
+import { Loader2, Camera, Map, Tag, Calendar, Download, Sparkles } from 'lucide-react';
 import MainHeader from '@/components/MainHeader';
+import PhotoCategories from '@/components/PhotoCategories';
+import PhotoDetailModal from '@/components/PhotoDetailModal';
 
 // Colors for pie chart
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#9146FF', '#FF6666', '#6666FF'];
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<string>('overview');
+  const [selectedPhoto, setSelectedPhoto] = useState<PhotoWithTags | null>(null);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  
+  // Function to handle photo selection
+  const handlePhotoClick = (photo: PhotoWithTags) => {
+    setSelectedPhoto(photo);
+    setDetailModalOpen(true);
+  };
 
   // Fetch all photos
   const { data: photos, isLoading } = useQuery<PhotoWithTags[]>({
@@ -182,6 +192,10 @@ export default function Dashboard() {
               <TabsTrigger value="tags">Tag Analysis</TabsTrigger>
               <TabsTrigger value="locations">Location Analysis</TabsTrigger>
               <TabsTrigger value="timeline">Timeline</TabsTrigger>
+              <TabsTrigger value="recommendations">
+                <Sparkles className="h-4 w-4 mr-1" />
+                Recommendations
+              </TabsTrigger>
             </TabsList>
             
             <TabsContent value="overview" className="space-y-4">
