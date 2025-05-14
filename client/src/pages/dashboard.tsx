@@ -28,8 +28,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Camera, Map, Tag, Calendar, Download, Sparkles } from 'lucide-react';
 import MainHeader from '@/components/MainHeader';
-import PhotoCategories from '@/components/PhotoCategories';
 import PhotoDetailModal from '@/components/PhotoDetailModal';
+import RecommendationPanel from '@/components/RecommendationPanel';
 
 // Colors for pie chart
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#9146FF', '#FF6666', '#6666FF'];
@@ -417,7 +417,24 @@ export default function Dashboard() {
                 </CardContent>
               </Card>
             </TabsContent>
+            
+            {/* Recommendations Tab */}
+            <TabsContent value="recommendations" className="space-y-4">
+              <RecommendationPanel 
+                selectedPhoto={selectedPhoto} 
+                onPhotoClick={handlePhotoClick} 
+              />
+            </TabsContent>
           </Tabs>
+          
+          {/* Photo Detail Modal */}
+          {selectedPhoto && (
+            <PhotoDetailModal
+              isOpen={detailModalOpen}
+              onClose={() => setDetailModalOpen(false)}
+              photo={selectedPhoto}
+            />
+          )}
         </div>
       </div>
     </div>
