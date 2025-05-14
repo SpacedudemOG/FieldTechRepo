@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Link } from 'wouter';
-import Layout from '@/components/Layout';
 import StaticPhotoMap from '@/components/StaticPhotoMap';
 import PhotoList from '@/components/PhotoList';
 import PhotoDetailModal from '@/components/PhotoDetailModal';
 import UploadModal from '@/components/UploadModal';
+import MainHeader from '@/components/MainHeader';
 import usePhotoStorage from '@/hooks/usePhotoStorage';
 import { PhotoWithTags } from '@shared/schema';
 import { Helmet } from 'react-helmet';

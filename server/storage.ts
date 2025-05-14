@@ -205,18 +205,25 @@ export class MemStorage implements IStorage {
     let filteredPhotos = Array.from(this.photos.values());
 
     // Filter by date range
-    if (filter.startDate) {
-      const startDate = new Date(filter.startDate);
+    if (filter.fromDate) {
+      const fromDate = new Date(filter.fromDate);
       filteredPhotos = filteredPhotos.filter(photo => 
-        photo.uploadedAt >= startDate
+        photo.uploadedAt >= fromDate
       );
     }
 
-    if (filter.endDate) {
-      const endDate = new Date(filter.endDate);
-      endDate.setHours(23, 59, 59, 999); // End of the day
+    if (filter.toDate) {
+      const toDate = new Date(filter.toDate);
+      toDate.setHours(23, 59, 59, 999); // End of the day
       filteredPhotos = filteredPhotos.filter(photo => 
-        photo.uploadedAt <= endDate
+        photo.uploadedAt <= toDate
+      );
+    }
+
+    // Filter by location
+    if (filter.location) {
+      filteredPhotos = filteredPhotos.filter(photo => 
+        photo.location === filter.location
       );
     }
 
@@ -229,18 +236,45 @@ export class MemStorage implements IStorage {
       );
     }
 
-    // Filter by tags
-    if (filter.tags && filter.tags.length > 0) {
+    // Filter by tags (now using tagIds)
+    if (filter.tagIds && filter.tagIds.length > 0) {
       // Get all photos that have at least one of the requested tags
       const photoIds = new Set<number>();
       for (const photoTag of this.photoTags.values()) {
-        const tag = this.tags.get(photoTag.tagId);
-        if (tag && filter.tags.includes(tag.name)) {
+        if (filter.tagIds.includes(photoTag.tagId)) {
           photoIds.add(photoTag.photoId);
         }
       }
 
       filteredPhotos = filteredPhotos.filter(photo => photoIds.has(photo.id));
+    }
+    
+    // Filter by employee (would be implemented with actual employee field)
+    if (filter.employee) {
+      // For demo purposes, applying a simple filter. In a real implementation, 
+      // this would filter by a proper employee field
+      filteredPhotos = filteredPhotos.filter(photo => 
+        photo.title.includes(filter.employee) || 
+        (photo.notes && photo.notes.includes(filter.employee))
+      );
+    }
+    
+    // Filter by customer
+    if (filter.customer) {
+      // Similar to employee filter, using existing fields for demo
+      filteredPhotos = filteredPhotos.filter(photo => 
+        photo.title.includes(filter.customer) || 
+        (photo.notes && photo.notes.includes(filter.customer))
+      );
+    }
+    
+    // Filter by work order number
+    if (filter.workOrderNumber) {
+      // For demo purposes - in a real app, this would filter by a proper workOrderNumber field
+      filteredPhotos = filteredPhotos.filter(photo => 
+        photo.title.includes(filter.workOrderNumber) || 
+        (photo.notes && photo.notes.includes(filter.workOrderNumber))
+      );
     }
 
     // Convert to PhotoWithTags

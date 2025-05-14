@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useQuery } from '@tanstack/react-query';
 import { 
@@ -16,7 +16,6 @@ import {
 } from 'recharts';
 import { formatDistance } from 'date-fns';
 import { PhotoWithTags } from '@shared/schema';
-import { queryClient, apiRequest } from '@/lib/queryClient';
 import { 
   Card, 
   CardContent, 
@@ -27,7 +26,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Camera, Map, Tag, Calendar, Download, ArrowDownToLine } from 'lucide-react';
+import { Loader2, Camera, Map, Tag, Calendar, Download } from 'lucide-react';
+import MainHeader from '@/components/MainHeader';
 
 // Colors for pie chart
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#9146FF', '#FF6666', '#6666FF'];
@@ -43,10 +43,13 @@ export default function Dashboard() {
 
   if (isLoading) {
     return (
-      <div className="h-screen flex items-center justify-center">
-        <div className="flex flex-col items-center">
-          <Loader2 className="h-10 w-10 text-primary animate-spin" />
-          <p className="mt-2 text-gray-600">Loading dashboard data...</p>
+      <div className="flex flex-col min-h-screen">
+        <MainHeader />
+        <div className="flex-1 flex items-center justify-center pt-16">
+          <div className="flex flex-col items-center">
+            <Loader2 className="h-10 w-10 text-primary animate-spin" />
+            <p className="mt-2 text-gray-600">Loading dashboard data...</p>
+          </div>
         </div>
       </div>
     );
@@ -104,300 +107,305 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="container mx-auto p-4 max-w-7xl">
-      <Helmet>
-        <title>Analytics Dashboard | Field Technician Photo Repository</title>
-        <meta name="description" content="Analytics and reporting dashboard for the field technician photo repository" />
-      </Helmet>
+    <div className="flex flex-col min-h-screen">
+      <MainHeader />
+      <div className="flex-1 pt-16 pb-6 px-4 overflow-x-hidden">
+        <div className="container mx-auto max-w-7xl">
+          <Helmet>
+            <title>Analytics Dashboard | Field Technician Photo Repository</title>
+            <meta name="description" content="Analytics and reporting dashboard for the field technician photo repository" />
+          </Helmet>
 
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Analytics Dashboard</h1>
-          <p className="text-muted-foreground">Get insights on your field photos and activities</p>
-        </div>
-        <Button variant="outline" onClick={() => window.print()}>
-          <Download className="mr-2 h-4 w-4" />
-          Export Report
-        </Button>
-      </div>
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Analytics Dashboard</h1>
+              <p className="text-muted-foreground">Get insights on your field photos and activities</p>
+            </div>
+            <Button variant="outline" onClick={() => window.print()}>
+              <Download className="mr-2 h-4 w-4" />
+              Export Report
+            </Button>
+          </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Photos</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center">
-              <Camera className="mr-2 h-5 w-5 text-primary" />
-              <div className="text-2xl font-bold">{photoCount}</div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Unique Tags</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center">
-              <Tag className="mr-2 h-5 w-5 text-primary" />
-              <div className="text-2xl font-bold">{tagCount}</div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Locations</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center">
-              <Map className="mr-2 h-5 w-5 text-primary" />
-              <div className="text-2xl font-bold">{locationCount}</div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Latest Upload</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center">
-              <Calendar className="mr-2 h-5 w-5 text-primary" />
-              <div className="text-md font-medium">{recentUpload}</div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Tabs for different analytics views */}
-      <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="mb-6">
-        <TabsList className="mb-4">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="tags">Tag Analysis</TabsTrigger>
-          <TabsTrigger value="locations">Location Analysis</TabsTrigger>
-          <TabsTrigger value="timeline">Timeline</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="overview" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card className="col-span-1">
-              <CardHeader>
-                <CardTitle>Tag Distribution</CardTitle>
-                <CardDescription>Breakdown of photo tags by frequency</CardDescription>
+          {/* Summary Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Total Photos</CardTitle>
               </CardHeader>
-              <CardContent className="h-[300px]">
-                {tagDistribution.length > 0 ? (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={tagDistribution}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={renderCustomizedLabel}
-                        outerRadius={100}
-                        fill="#8884d8"
-                        dataKey="value"
-                      >
-                        {tagDistribution.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip formatter={(value, name) => [`${value} photos`, name]} />
-                      <Legend />
-                    </PieChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="h-full flex items-center justify-center text-muted-foreground">
-                    No tag data available
-                  </div>
-                )}
+              <CardContent>
+                <div className="flex items-center">
+                  <Camera className="mr-2 h-5 w-5 text-primary" />
+                  <div className="text-2xl font-bold">{photoCount}</div>
+                </div>
               </CardContent>
             </Card>
-            
-            <Card className="col-span-1">
-              <CardHeader>
-                <CardTitle>Uploads Over Time</CardTitle>
-                <CardDescription>Photo upload frequency by date</CardDescription>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Unique Tags</CardTitle>
               </CardHeader>
-              <CardContent className="h-[300px]">
-                {uploadsOverTime.length > 0 ? (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={uploadsOverTime}
-                      margin={{
-                        top: 5,
-                        right: 30,
-                        left: 20,
-                        bottom: 5,
-                      }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="date" />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                      <Bar dataKey="photos" fill="#8884d8" name="Photos Uploaded" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="h-full flex items-center justify-center text-muted-foreground">
-                    No timeline data available
-                  </div>
-                )}
+              <CardContent>
+                <div className="flex items-center">
+                  <Tag className="mr-2 h-5 w-5 text-primary" />
+                  <div className="text-2xl font-bold">{tagCount}</div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Locations</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center">
+                  <Map className="mr-2 h-5 w-5 text-primary" />
+                  <div className="text-2xl font-bold">{locationCount}</div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Latest Upload</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center">
+                  <Calendar className="mr-2 h-5 w-5 text-primary" />
+                  <div className="text-md font-medium">{recentUpload}</div>
+                </div>
               </CardContent>
             </Card>
           </div>
-          
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
-              <CardDescription>Latest photo uploads and activities</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {photos && photos.length > 0 ? (
-                  photos.slice(0, 5).map((photo) => (
-                    <div key={photo.id} className="flex items-start space-x-4">
-                      <div className="w-12 h-12 rounded-md overflow-hidden flex-shrink-0">
-                        <img 
-                          src={`/api/uploads/${photo.fileName}`} 
-                          alt={photo.title}
-                          className="w-full h-full object-cover"
-                        />
+
+          {/* Tabs for different analytics views */}
+          <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="mb-6">
+            <TabsList className="mb-4">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="tags">Tag Analysis</TabsTrigger>
+              <TabsTrigger value="locations">Location Analysis</TabsTrigger>
+              <TabsTrigger value="timeline">Timeline</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="overview" className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card className="col-span-1">
+                  <CardHeader>
+                    <CardTitle>Tag Distribution</CardTitle>
+                    <CardDescription>Breakdown of photo tags by frequency</CardDescription>
+                  </CardHeader>
+                  <CardContent className="h-[300px]">
+                    {tagDistribution.length > 0 ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={tagDistribution}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            label={renderCustomizedLabel}
+                            outerRadius={100}
+                            fill="#8884d8"
+                            dataKey="value"
+                          >
+                            {tagDistribution.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip formatter={(value, name) => [`${value} photos`, name]} />
+                          <Legend />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="h-full flex items-center justify-center text-muted-foreground">
+                        No tag data available
                       </div>
-                      <div className="flex-1 space-y-1">
-                        <p className="font-medium">{photo.title}</p>
-                        <div className="flex flex-wrap gap-1">
-                          {photo.tags.map((tag) => (
-                            <Badge variant="secondary" key={tag.id}>
-                              {tag.name}
-                            </Badge>
-                          ))}
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          {formatTimeAgo(photo.uploadedAt.toString())}
-                        </p>
+                    )}
+                  </CardContent>
+                </Card>
+                
+                <Card className="col-span-1">
+                  <CardHeader>
+                    <CardTitle>Uploads Over Time</CardTitle>
+                    <CardDescription>Photo upload frequency by date</CardDescription>
+                  </CardHeader>
+                  <CardContent className="h-[300px]">
+                    {uploadsOverTime.length > 0 ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart
+                          data={uploadsOverTime}
+                          margin={{
+                            top: 5,
+                            right: 30,
+                            left: 20,
+                            bottom: 5,
+                          }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="date" />
+                          <YAxis />
+                          <Tooltip />
+                          <Legend />
+                          <Bar dataKey="photos" fill="#8884d8" name="Photos Uploaded" />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="h-full flex items-center justify-center text-muted-foreground">
+                        No timeline data available
                       </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center py-6 text-muted-foreground">
-                    No recent activity to display
-                  </div>
-                )}
+                    )}
+                  </CardContent>
+                </Card>
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="tags" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Tag Analysis</CardTitle>
-              <CardDescription>Detailed breakdown of photo tags</CardDescription>
-            </CardHeader>
-            <CardContent className="h-[400px]">
-              {tagDistribution.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={tagDistribution}
-                    layout="vertical"
-                    margin={{
-                      top: 5,
-                      right: 30,
-                      left: 100,
-                      bottom: 5,
-                    }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis type="number" />
-                    <YAxis type="category" dataKey="name" />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="value" fill="#8884d8" name="Photos" />
-                  </BarChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="h-full flex items-center justify-center text-muted-foreground">
-                  No tag data available
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="locations" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Location Distribution</CardTitle>
-              <CardDescription>Photos by location</CardDescription>
-            </CardHeader>
-            <CardContent className="h-[400px]">
-              {locationDistribution.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={locationDistribution}
-                    layout="vertical"
-                    margin={{
-                      top: 5,
-                      right: 30,
-                      left: 100,
-                      bottom: 5,
-                    }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis type="number" />
-                    <YAxis type="category" dataKey="name" />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="value" fill="#82ca9d" name="Photos" />
-                  </BarChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="h-full flex items-center justify-center text-muted-foreground">
-                  No location data available
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="timeline" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Upload Timeline</CardTitle>
-              <CardDescription>Photo uploads over time</CardDescription>
-            </CardHeader>
-            <CardContent className="h-[400px]">
-              {uploadsOverTime.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={uploadsOverTime}
-                    margin={{
-                      top: 5,
-                      right: 30,
-                      left: 20,
-                      bottom: 5,
-                    }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="photos" fill="#8884d8" name="Photos Uploaded" />
-                  </BarChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="h-full flex items-center justify-center text-muted-foreground">
-                  No timeline data available
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle>Recent Activity</CardTitle>
+                  <CardDescription>Latest photo uploads and activities</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {photos && photos.length > 0 ? (
+                      photos.slice(0, 5).map((photo) => (
+                        <div key={photo.id} className="flex items-start space-x-4">
+                          <div className="w-12 h-12 rounded-md overflow-hidden flex-shrink-0">
+                            <img 
+                              src={`/api/uploads/${photo.fileName}`} 
+                              alt={photo.title}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="flex-1 space-y-1">
+                            <p className="font-medium">{photo.title}</p>
+                            <div className="flex flex-wrap gap-1">
+                              {photo.tags.map((tag) => (
+                                <Badge variant="secondary" key={tag.id}>
+                                  {tag.name}
+                                </Badge>
+                              ))}
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              {formatTimeAgo(photo.uploadedAt.toString())}
+                            </p>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-6 text-muted-foreground">
+                        No recent activity to display
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="tags" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Tag Analysis</CardTitle>
+                  <CardDescription>Detailed breakdown of photo tags</CardDescription>
+                </CardHeader>
+                <CardContent className="h-[400px]">
+                  {tagDistribution.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={tagDistribution}
+                        layout="vertical"
+                        margin={{
+                          top: 5,
+                          right: 30,
+                          left: 100,
+                          bottom: 5,
+                        }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis type="number" />
+                        <YAxis type="category" dataKey="name" />
+                        <Tooltip />
+                        <Legend />
+                        <Bar dataKey="value" fill="#8884d8" name="Photos" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="h-full flex items-center justify-center text-muted-foreground">
+                      No tag data available
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="locations" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Location Distribution</CardTitle>
+                  <CardDescription>Photos by location</CardDescription>
+                </CardHeader>
+                <CardContent className="h-[400px]">
+                  {locationDistribution.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={locationDistribution}
+                        layout="vertical"
+                        margin={{
+                          top: 5,
+                          right: 30,
+                          left: 100,
+                          bottom: 5,
+                        }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis type="number" />
+                        <YAxis type="category" dataKey="name" />
+                        <Tooltip />
+                        <Legend />
+                        <Bar dataKey="value" fill="#82ca9d" name="Photos" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="h-full flex items-center justify-center text-muted-foreground">
+                      No location data available
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="timeline" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Upload Timeline</CardTitle>
+                  <CardDescription>Photo uploads over time</CardDescription>
+                </CardHeader>
+                <CardContent className="h-[400px]">
+                  {uploadsOverTime.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={uploadsOverTime}
+                        margin={{
+                          top: 5,
+                          right: 30,
+                          left: 20,
+                          bottom: 5,
+                        }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="date" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Bar dataKey="photos" fill="#8884d8" name="Photos Uploaded" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="h-full flex items-center justify-center text-muted-foreground">
+                      No timeline data available
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </div>
     </div>
   );
 }
