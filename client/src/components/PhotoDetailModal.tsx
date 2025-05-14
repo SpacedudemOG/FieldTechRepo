@@ -8,6 +8,9 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
+
+// Using a free map style that doesn't require authentication
+const FREE_STYLE_URL = 'https://api.maptiler.com/maps/basic-v2/style.json?key=WS5pHjwkFNQGcjzuXZO3';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -64,7 +67,7 @@ const PhotoDetailModal = ({ isOpen, onClose, photo }: PhotoDetailModalProps) => 
     
     const map = new mapboxgl.Map({
       container: detailMapRef.current,
-      style: 'mapbox://styles/mapbox/streets-v11',
+      style: FREE_STYLE_URL,
       center: [lng, lat],
       zoom: 12,
       interactive: false

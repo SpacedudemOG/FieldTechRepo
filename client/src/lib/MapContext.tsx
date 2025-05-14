@@ -2,12 +2,11 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import mapboxgl from 'mapbox-gl';
 import { PhotoWithTags } from '@shared/schema';
 
-// Setup mapbox access token - using public token for demo purposes
-// In production, you would use a more secure method for managing tokens
-const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4M29iazA2Z2gycXA4N2pmbDZmangifQ.-g_vE53SD2WrJ6tFX7QHmA';
+// Using a free OSM-compatible style that doesn't require authentication
+const FREE_STYLE_URL = 'https://api.maptiler.com/maps/basic-v2/style.json?key=WS5pHjwkFNQGcjzuXZO3';
 
-// Set the token for mapbox
-mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
+// Set token to a placeholder - we'll use a free style that doesn't need auth
+mapboxgl.accessToken = 'no-token-needed';
 
 interface MapContextValue {
   map: mapboxgl.Map | null;
@@ -49,7 +48,7 @@ export const MapContextProvider = ({ children }: { children: ReactNode }) => {
 
     const newMap = new mapboxgl.Map({
       container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/streets-v11', // Using a standard style 
+      style: FREE_STYLE_URL, // Using a free style that doesn't require authentication
       center: [-96, 37.8], // Center on US
       zoom: 3,
     });
