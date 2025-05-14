@@ -30,6 +30,7 @@ import { Loader2, Camera, Map, Tag, Calendar, Download, Sparkles } from 'lucide-
 import MainHeader from '@/components/MainHeader';
 import PhotoDetailModal from '@/components/PhotoDetailModal';
 import RecommendationPanel from '@/components/RecommendationPanel';
+import DashboardNavigation from '@/components/DashboardNavigation';
 
 // Colors for pie chart
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#9146FF', '#FF6666', '#6666FF'];
@@ -119,7 +120,7 @@ export default function Dashboard() {
   return (
     <div className="flex flex-col min-h-screen">
       <MainHeader />
-      <div className="flex-1 pt-16 pb-6 px-4 overflow-x-hidden">
+      <div className="flex-1 pt-16 pb-16 md:pb-6 px-4 overflow-x-hidden">
         <div className="container mx-auto max-w-7xl">
           <Helmet>
             <title>Analytics Dashboard | Field Technician Photo Repository</title>
@@ -437,6 +438,12 @@ export default function Dashboard() {
           )}
         </div>
       </div>
+      
+      {/* Mobile Navigation */}
+      <DashboardNavigation 
+        activeTab={activeTab} 
+        onTabChange={setActiveTab} 
+      />
     </div>
   );
 }
