@@ -19,11 +19,11 @@ export const tags = pgTable("tags", {
   id: serial("id").primaryKey(),
   name: text("name").notNull().unique(),
   aiGenerated: boolean("ai_generated").default(false),
+  confidence: json("confidence").default(1.0),
 });
 
-export const insertTagSchema = createInsertSchema(tags).pick({
-  name: true,
-  aiGenerated: true,
+export const insertTagSchema = createInsertSchema(tags).omit({
+  id: true
 });
 
 // Define Photo schema

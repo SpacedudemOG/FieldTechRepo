@@ -5,6 +5,7 @@ import { z } from "zod";
 import { storage } from "./storage";
 import { extractGPSInfo } from "./services/exif";
 import { analyzeImage } from "./services/openai";
+import { processFieldTechnicianPhoto, suggestDomainSpecificTags } from "./services/anthropic";
 import { 
   insertPhotoSchema, 
   insertTagSchema, 
