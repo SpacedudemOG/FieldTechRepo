@@ -6,6 +6,7 @@ import { storage } from "./storage";
 import { extractGPSInfo } from "./services/exif";
 import { analyzeImage } from "./services/openai";
 import { processFieldTechnicianPhoto, suggestDomainSpecificTags } from "./services/anthropic";
+import { getSimilarPhotos, categorizePhotos, getRecommendationsByQuery } from "./services/recommendationService";
 import { 
   insertPhotoSchema, 
   insertTagSchema, 
@@ -262,6 +263,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.get('/map-key', (_req: Request, res: Response) => {
     // Send the API key from environment variable
     res.send(process.env.GOOGLE_MAPS_API_KEY || '');
+  });
+
+  // Recommendation Endpoints
+  
+  // Get similar photos based on a reference photo ID
+  apiRouter.get('/recommendations/similar/:photoId', async (req: Request, res: Response) => {
+    try {
+      const photoId = parseInt(req.params.photoId);
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 5;
+      
+      if (isNaN(photoId)) {
+        return res.status(400).json({ message: "Invalid photo ID" });
+      }
+      
+      const similarPhotos = await getSimilarPhotos(photoId, storage, limit);
+      res.json(similarPhotos);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get similar photos", error: String(error) });
+    }
+  });
+  
+  // Get photos grouped by contextual categories
+  apiRouter.get('/recommendations/categories', async (req: Request, res: Response) => {
+    try {
+      const photos = await storage.getAllPhotos();
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 3;
+      
+      const categories = await categorizePhotos(photos, limit);
+      res.json(categories);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to categorize photos", error: String(error) });
+    }
+  });
+  
+  // Get recommendations based on a text query
+  apiRouter.get('/recommendations/search', async (req: Request, res: Response) => {
+    try {
+      const query = req.query.q as string;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 5;
+      
+      if (!query || query.trim() === '') {
+        return res.status(400).json({ message: "Search query is required" });
+      }
+      
+      const recommendations = await getRecommendationsByQuery(query, storage, limit);
+      res.json(recommendations);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get recommendations", error: String(error) });
+    }
   });
 
   const httpServer = createServer(app);
