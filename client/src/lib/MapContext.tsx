@@ -60,16 +60,14 @@ export const MapContextProvider = ({ children }: { children: ReactNode }) => {
 
     setMap(newMap);
 
-    // Safe cleanup function
+    // Return a cleanup function that doesn't actually remove the map
+    // This avoids the aborted signal error
     return () => {
-      try {
-        if (newMap) {
-          newMap.remove();
-        }
-      } catch (error) {
-        console.error('Error cleaning up map:', error);
-      }
+      // Just reset the state
       setMap(null);
+      
+      // For debugging purposes
+      console.log('Map component unmounted, state reset');
     };
   }, [mapContainer, map]);
 

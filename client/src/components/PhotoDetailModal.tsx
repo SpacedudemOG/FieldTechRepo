@@ -81,15 +81,13 @@ const PhotoDetailModal = ({ isOpen, onClose, photo }: PhotoDetailModalProps) => 
     
     setDetailMap(map);
     
+    // Return a cleanup function that just resets state
     return () => {
-      try {
-        if (map) {
-          map.remove();
-        }
-      } catch (error) {
-        console.error('Error cleaning up detail map:', error);
-      }
+      // Just reset the state
       setDetailMap(null);
+      
+      // For debugging purposes
+      console.log('Detail map component unmounted, state reset');
     };
   }, [isOpen, photo.latitude, photo.longitude, detailMap]);
   
