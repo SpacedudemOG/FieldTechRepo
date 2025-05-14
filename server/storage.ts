@@ -249,31 +249,116 @@ export class MemStorage implements IStorage {
       filteredPhotos = filteredPhotos.filter(photo => photoIds.has(photo.id));
     }
     
-    // Filter by employee (would be implemented with actual employee field)
+    // Field technician filters
+    
+    // Filter by employee
     if (filter.employee) {
-      // For demo purposes, applying a simple filter. In a real implementation, 
-      // this would filter by a proper employee field
       filteredPhotos = filteredPhotos.filter(photo => 
-        photo.title.includes(filter.employee) || 
-        (photo.notes && photo.notes.includes(filter.employee))
+        photo.employee === filter.employee ||
+        // Fallback to title/notes for backwards compatibility
+        photo.title.toLowerCase().includes(filter.employee.toLowerCase()) || 
+        (photo.notes && photo.notes.toLowerCase().includes(filter.employee.toLowerCase()))
       );
     }
     
     // Filter by customer
     if (filter.customer) {
-      // Similar to employee filter, using existing fields for demo
       filteredPhotos = filteredPhotos.filter(photo => 
-        photo.title.includes(filter.customer) || 
-        (photo.notes && photo.notes.includes(filter.customer))
+        photo.customer === filter.customer ||
+        // Fallback to title/notes for backwards compatibility
+        photo.title.toLowerCase().includes(filter.customer.toLowerCase()) || 
+        (photo.notes && photo.notes.toLowerCase().includes(filter.customer.toLowerCase()))
       );
     }
     
     // Filter by work order number
     if (filter.workOrderNumber) {
-      // For demo purposes - in a real app, this would filter by a proper workOrderNumber field
       filteredPhotos = filteredPhotos.filter(photo => 
-        photo.title.includes(filter.workOrderNumber) || 
-        (photo.notes && photo.notes.includes(filter.workOrderNumber))
+        photo.workOrderNumber === filter.workOrderNumber ||
+        // Fallback to title/notes for backwards compatibility
+        photo.title.toLowerCase().includes(filter.workOrderNumber.toLowerCase()) || 
+        (photo.notes && photo.notes.toLowerCase().includes(filter.workOrderNumber.toLowerCase()))
+      );
+    }
+    
+    // New advanced filters
+    
+    // Filter by project ID
+    if (filter.projectId) {
+      filteredPhotos = filteredPhotos.filter(photo => 
+        photo.projectId === filter.projectId
+      );
+    }
+    
+    // Filter by category
+    if (filter.category) {
+      filteredPhotos = filteredPhotos.filter(photo => 
+        photo.category === filter.category
+      );
+    }
+    
+    // Filter by equipment ID
+    if (filter.equipmentId) {
+      filteredPhotos = filteredPhotos.filter(photo => 
+        photo.equipmentId === filter.equipmentId ||
+        // Fallback to title/notes
+        photo.title.toLowerCase().includes(filter.equipmentId.toLowerCase()) || 
+        (photo.notes && photo.notes.toLowerCase().includes(filter.equipmentId.toLowerCase()))
+      );
+    }
+    
+    // Filter by priority
+    if (filter.priority) {
+      filteredPhotos = filteredPhotos.filter(photo => 
+        photo.priority === filter.priority
+      );
+    }
+    
+    // Filter by status
+    if (filter.status) {
+      filteredPhotos = filteredPhotos.filter(photo => 
+        photo.status === filter.status
+      );
+    }
+    
+    // Boolean filters
+    
+    // Filter by presence of coordinates
+    if (filter.hasCoordinates === true) {
+      filteredPhotos = filteredPhotos.filter(photo => 
+        photo.latitude && photo.longitude
+      );
+    } else if (filter.hasCoordinates === false) {
+      filteredPhotos = filteredPhotos.filter(photo => 
+        !photo.latitude || !photo.longitude
+      );
+    }
+    
+    // Filter by presence of notes
+    if (filter.hasNotes === true) {
+      filteredPhotos = filteredPhotos.filter(photo => 
+        photo.notes && photo.notes.trim() !== ''
+      );
+    } else if (filter.hasNotes === false) {
+      filteredPhotos = filteredPhotos.filter(photo => 
+        !photo.notes || photo.notes.trim() === ''
+      );
+    }
+    
+    // Filter by presence of tags (requires async operation, handled separately below)
+    let hasTags = filter.hasTags;
+    
+    // Text search (search across multiple fields)
+    if (filter.searchText && filter.searchText.trim() !== '') {
+      const searchText = filter.searchText.toLowerCase().trim();
+      filteredPhotos = filteredPhotos.filter(photo => 
+        photo.title.toLowerCase().includes(searchText) ||
+        (photo.location && photo.location.toLowerCase().includes(searchText)) ||
+        (photo.notes && photo.notes.toLowerCase().includes(searchText)) ||
+        (photo.category && photo.category.toLowerCase().includes(searchText)) ||
+        (photo.customer && photo.customer.toLowerCase().includes(searchText)) ||
+        (photo.employee && photo.employee.toLowerCase().includes(searchText)) ||
+        (photo.workOrderNumber && photo.workOrderNumber.toLowerCase().includes(searchText))
       );
     }
 

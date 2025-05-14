@@ -40,6 +40,15 @@ export const photos = pgTable("photos", {
   notes: text("notes"),
   base64Data: text("base64_data").notNull(),
   userId: integer("user_id").references(() => users.id),
+  // Additional fields for advanced filtering
+  projectId: text("project_id"),
+  category: text("category"),
+  equipmentId: text("equipment_id"),
+  priority: text("priority"),
+  status: text("status"),
+  customer: text("customer"),
+  workOrderNumber: text("work_order_number"),
+  employee: text("employee"),
 });
 
 export const insertPhotoSchema = createInsertSchema(photos).omit({
@@ -68,10 +77,22 @@ export const photoFilterSchema = z.object({
   locationRadius: z.number().optional(),
   // Tag filtering
   tagIds: z.array(z.number()).optional(),
-  // Additional filters for field technicians
+  // Field technician filters
   employee: z.string().optional(),
   customer: z.string().optional(),
   workOrderNumber: z.string().optional(),
+  // Additional advanced filtering options
+  projectId: z.string().optional(),
+  category: z.string().optional(),
+  equipmentId: z.string().optional(),
+  priority: z.string().optional(),
+  status: z.string().optional(),
+  // Boolean filters
+  hasCoordinates: z.boolean().optional(),
+  hasTags: z.boolean().optional(),
+  hasNotes: z.boolean().optional(),
+  // Text search
+  searchText: z.string().optional(),
 });
 
 // Type definitions
