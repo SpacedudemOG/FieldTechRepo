@@ -60,8 +60,15 @@ export const MapContextProvider = ({ children }: { children: ReactNode }) => {
 
     setMap(newMap);
 
+    // Safe cleanup function
     return () => {
-      newMap.remove();
+      try {
+        if (newMap) {
+          newMap.remove();
+        }
+      } catch (error) {
+        console.error('Error cleaning up map:', error);
+      }
       setMap(null);
     };
   }, [mapContainer, map]);
@@ -83,9 +90,13 @@ export const MapContextProvider = ({ children }: { children: ReactNode }) => {
         el.className = 'w-6 h-6 bg-primary rounded-full flex items-center justify-center text-white shadow-md';
         el.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path><circle cx="12" cy="13" r="3"></circle></svg>';
 
+        // Safely handle potentially null values
+        const lng = photo.longitude ? parseFloat(photo.longitude) : 0;
+        const lat = photo.latitude ? parseFloat(photo.latitude) : 0;
+
         // Add marker to map
         const marker = new mapboxgl.Marker(el)
-          .setLngLat([parseFloat(photo.longitude), parseFloat(photo.latitude)])
+          .setLngLat([lng, lat])
           .setPopup(
             new mapboxgl.Popup({ offset: 25 }).setHTML(
               `<div class="p-2">
@@ -108,7 +119,9 @@ export const MapContextProvider = ({ children }: { children: ReactNode }) => {
       photos
         .filter(photo => photo.latitude && photo.longitude)
         .forEach(photo => {
-          bounds.extend([parseFloat(photo.longitude), parseFloat(photo.latitude)]);
+          const lng = photo.longitude ? parseFloat(photo.longitude) : 0;
+          const lat = photo.latitude ? parseFloat(photo.latitude) : 0;
+          bounds.extend([lng, lat]);
         });
       
       map.fitBounds(bounds, { padding: 50 });
@@ -119,8 +132,11 @@ export const MapContextProvider = ({ children }: { children: ReactNode }) => {
   const flyToPhoto = (photo: PhotoWithTags) => {
     if (!map || !mapLoaded || !photo.latitude || !photo.longitude) return;
     
+    const lng = photo.longitude ? parseFloat(photo.longitude) : 0;
+    const lat = photo.latitude ? parseFloat(photo.latitude) : 0;
+    
     map.flyTo({
-      center: [parseFloat(photo.longitude), parseFloat(photo.latitude)],
+      center: [lng, lat],
       zoom: 14,
       essential: true
     });
@@ -128,9 +144,8 @@ export const MapContextProvider = ({ children }: { children: ReactNode }) => {
     // Find and open the popup for this photo
     markers.forEach(marker => {
       const markerLngLat = marker.getLngLat();
-      const photoLngLat = [parseFloat(photo.longitude), parseFloat(photo.latitude)];
       
-      if (markerLngLat.lng === photoLngLat[0] && markerLngLat.lat === photoLngLat[1]) {
+      if (markerLngLat.lng === lng && markerLngLat.lat === lat) {
         marker.togglePopup();
       }
     });
