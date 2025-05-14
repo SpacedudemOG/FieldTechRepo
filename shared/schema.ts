@@ -60,10 +60,18 @@ export const insertPhotoTagSchema = createInsertSchema(photoTags).omit({
 
 // Extended schemas for frontend/API use
 export const photoFilterSchema = z.object({
-  startDate: z.string().optional(),
-  endDate: z.string().optional(),
+  // Date filtering
+  fromDate: z.string().optional(),
+  toDate: z.string().optional(),
+  // Location filtering
+  location: z.string().optional(),
   locationRadius: z.number().optional(),
-  tags: z.array(z.string()).optional(),
+  // Tag filtering
+  tagIds: z.array(z.number()).optional(),
+  // Additional filters for field technicians
+  employee: z.string().optional(),
+  customer: z.string().optional(),
+  workOrderNumber: z.string().optional(),
 });
 
 // Type definitions
