@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'wouter';
 import Layout from '@/components/Layout';
 import PhotoMap from '@/components/PhotoMap';
 import PhotoList from '@/components/PhotoList';
@@ -8,6 +9,7 @@ import usePhotoStorage from '@/hooks/usePhotoStorage';
 import { PhotoWithTags } from '@shared/schema';
 import { useMap } from '@/lib/MapContext';
 import { Helmet } from 'react-helmet';
+import { BarChart } from 'lucide-react';
 
 export default function Home() {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -120,7 +122,7 @@ export default function Home() {
 
         <nav className="md:hidden bg-white border-t border-gray-200 flex items-center justify-around py-2 px-4">
           <button 
-            className={`flex flex-col items-center justify-center w-1/4 py-1 ${activeTab === 'map' ? 'text-primary' : 'text-gray-500'}`}
+            className={`flex flex-col items-center justify-center w-1/5 py-1 ${activeTab === 'map' ? 'text-primary' : 'text-gray-500'}`}
             onClick={() => toggleActiveTab('map')}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -132,7 +134,7 @@ export default function Home() {
           </button>
           
           <button 
-            className={`flex flex-col items-center justify-center w-1/4 py-1 ${activeTab === 'photos' ? 'text-primary' : 'text-gray-500'}`}
+            className={`flex flex-col items-center justify-center w-1/5 py-1 ${activeTab === 'photos' ? 'text-primary' : 'text-gray-500'}`}
             onClick={() => toggleActiveTab('photos')}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -144,7 +146,7 @@ export default function Home() {
           </button>
           
           <button 
-            className="flex flex-col items-center justify-center w-1/4 py-1 text-gray-500"
+            className="flex flex-col items-center justify-center w-1/5 py-1 text-gray-500"
             onClick={() => setIsUploadModalOpen(true)}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -156,7 +158,7 @@ export default function Home() {
           </button>
           
           <button 
-            className="flex flex-col items-center justify-center w-1/4 py-1 text-gray-500"
+            className="flex flex-col items-center justify-center w-1/5 py-1 text-gray-500"
             onClick={() => {
               toggleActiveTab('photos');
               clearFilters();
@@ -175,6 +177,13 @@ export default function Home() {
             </svg>
             <span className="text-xs mt-1">Filter</span>
           </button>
+          
+          <Link href="/dashboard">
+            <a className="flex flex-col items-center justify-center w-1/5 py-1 text-gray-500 hover:text-primary">
+              <BarChart className="h-5 w-5" />
+              <span className="text-xs mt-1">Dashboard</span>
+            </a>
+          </Link>
         </nav>
 
         {/* Upload Modal */}
