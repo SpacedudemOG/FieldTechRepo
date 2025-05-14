@@ -1,5 +1,18 @@
+import { useEffect, useRef, useState } from 'react';
 import { PhotoWithTags } from '@shared/schema';
 import { Loader2 } from 'lucide-react';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+import { Map } from 'leaflet';
+
+// Fix for missing marker icons in Leaflet with React
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
+  iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+});
 
 interface PhotoMapProps {
   photos: PhotoWithTags[];
@@ -8,18 +21,111 @@ interface PhotoMapProps {
 }
 
 const StaticPhotoMap = ({ photos, loading, onPhotoClick }: PhotoMapProps) => {
+  const mapRef = useRef<Map>(null);
+  const [mapInitialized, setMapInitialized] = useState(false);
+  
+  // Calculate map center from photos
+  const getMapCenter = () => {
+    if (!photos || photos.length === 0) {
+      return [37.7749, -122.4194]; // Default to San Francisco
+    }
+    
+    // Find photos with valid coordinates
+    const validPhotos = photos.filter(p => p.latitude && p.longitude);
+    if (validPhotos.length === 0) {
+      return [37.7749, -122.4194]; // Default to San Francisco
+    }
+    
+    // Calculate average position
+    const latSum = validPhotos.reduce((sum, photo) => 
+      sum + parseFloat(photo.latitude || "0"), 0);
+    const lngSum = validPhotos.reduce((sum, photo) => 
+      sum + parseFloat(photo.longitude || "0"), 0);
+    
+    return [latSum / validPhotos.length, lngSum / validPhotos.length];
+  };
+
+  const center = getMapCenter();
+  
+  // Fit bounds to contain all markers when photos change
+  useEffect(() => {
+    if (mapRef.current && mapInitialized && photos.length > 0) {
+      const validPhotos = photos.filter(p => p.latitude && p.longitude);
+      
+      if (validPhotos.length > 0) {
+        const bounds = L.latLngBounds(
+          validPhotos.map(photo => [
+            parseFloat(photo.latitude || "0"), 
+            parseFloat(photo.longitude || "0")
+          ])
+        );
+        
+        mapRef.current.fitBounds(bounds, { padding: [50, 50] });
+      }
+    }
+  }, [photos, mapInitialized]);
+
   return (
     <div className="h-screen-minus-header w-full md:w-2/3 relative">
-      {/* Simple Map Display */}
-      <div className="map-container h-full bg-gray-100 p-4 overflow-auto">
-        <h3 className="text-lg font-semibold mb-3">Photo Locations</h3>
-        <div className="bg-white rounded-lg shadow-sm p-3">
-          <p className="text-sm text-gray-500 mb-3">
-            Map display is simplified. Your photos with coordinates are displayed below.
+      <div className="h-full flex flex-col">
+        {/* Map Header */}
+        <div className="bg-white p-3 border-b">
+          <h3 className="text-lg font-semibold">Field Technician Photo Locations</h3>
+          <p className="text-sm text-gray-500">
+            {photos.filter(p => p.latitude && p.longitude).length} photos with GPS coordinates
           </p>
+        </div>
+        
+        {/* Map Container */}
+        <div className="flex-1 relative">
+          <MapContainer
+            center={center as [number, number]}
+            zoom={10}
+            style={{ height: '100%', width: '100%' }}
+            ref={mapRef}
+            whenReady={() => {
+              setMapInitialized(true);
+            }}
+          >
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            
+            {/* Photo Markers */}
+            {photos.filter(p => p.latitude && p.longitude).map(photo => (
+              <Marker 
+                key={photo.id} 
+                position={[
+                  parseFloat(photo.latitude || "0"), 
+                  parseFloat(photo.longitude || "0")
+                ]}
+              >
+                <Popup>
+                  <div className="p-1">
+                    <h4 className="font-medium text-sm">{photo.title}</h4>
+                    {photo.location && (
+                      <p className="text-xs text-gray-600 mt-1">{photo.location}</p>
+                    )}
+                    <button 
+                      className="mt-2 text-xs text-primary hover:underline"
+                      onClick={() => onPhotoClick && onPhotoClick(photo)}
+                    >
+                      View Details
+                    </button>
+                  </div>
+                </Popup>
+              </Marker>
+            ))}
+          </MapContainer>
+        </div>
+        
+        {/* Photo List beneath map on mobile */}
+        <div className="md:hidden bg-white border-t p-3 overflow-auto max-h-[200px]">
+          <h4 className="font-medium text-sm mb-2">Photo List</h4>
           {photos && photos.length > 0 ? (
             <div className="space-y-2">
-              {photos.map(photo => (
+              {photos.filter(p => p.latitude && p.longitude).map(photo => (
                 <div 
                   key={photo.id} 
                   className="flex items-center text-sm p-2 bg-blue-50 rounded cursor-pointer hover:bg-blue-100 transition-colors"
@@ -32,11 +138,9 @@ const StaticPhotoMap = ({ photos, loading, onPhotoClick }: PhotoMapProps) => {
                     </svg>
                   </div>
                   <span className="flex-1 truncate">{photo.title}</span>
-                  {photo.latitude && photo.longitude && (
-                    <span className="text-xs text-gray-500">
-                      {photo.latitude.slice(0, 6)}, {photo.longitude.slice(0, 6)}
-                    </span>
-                  )}
+                  <span className="text-xs text-gray-500 ml-2">
+                    {photo.location || `${photo.latitude?.slice(0, 6)}, ${photo.longitude?.slice(0, 6)}`}
+                  </span>
                 </div>
               ))}
             </div>
@@ -48,7 +152,7 @@ const StaticPhotoMap = ({ photos, loading, onPhotoClick }: PhotoMapProps) => {
 
       {/* Loading overlay */}
       {loading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-80 z-10">
+        <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-80 z-[999]">
           <div className="flex flex-col items-center">
             <Loader2 className="h-10 w-10 text-primary animate-spin" />
             <p className="mt-2 text-gray-600">Loading photos...</p>

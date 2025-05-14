@@ -69,6 +69,29 @@
   width: 100%;
 }
 
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.leaflet-popup-content {
+  margin: 8px 12px;
+  line-height: 1.4;
+}
+
+.leaflet-popup-content p {
+  margin: 4px 0;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 6px;
+}
+
+.leaflet-control-attribution {
+  font-size: 9px;
+}
+
 @media (max-width: 768px) {
   .map-container {
     height: 50vh;
