@@ -1,175 +1,173 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import L from 'leaflet';
+import { createContext, useContext, useState, ReactNode, useCallback, useRef, useEffect } from 'react';
+import { GoogleMap, useJsApiLoader, Marker, InfoWindow } from '@react-google-maps/api';
 import { PhotoWithTags } from '@shared/schema';
 
-// Import Leaflet CSS
-import 'leaflet/dist/leaflet.css';
+// Define map options
+const mapOptions = {
+  disableDefaultUI: false,
+  zoomControl: true,
+  streetViewControl: false,
+  mapTypeControl: true,
+  fullscreenControl: false,
+};
 
+// Define center for US
+const defaultCenter = { lat: 37.8, lng: -96 };
+const defaultZoom = 4;
+
+// Define interface for the context
 interface MapContextValue {
-  map: L.Map | null;
-  mapContainer: React.RefObject<HTMLDivElement> | null;
-  setMapContainer: (ref: React.RefObject<HTMLDivElement>) => void;
+  isLoaded: boolean;
+  mapRef: React.MutableRefObject<GoogleMap | null>;
   addMarkers: (photos: PhotoWithTags[]) => void;
   flyToPhoto: (photo: PhotoWithTags) => void;
   mapLoaded: boolean;
+  mapContainer: null; // Kept for compatibility
+  setMapContainer: () => void; // Kept for compatibility
+  map: any; // Kept for compatibility
 }
 
-// Create context
+// Create the context
 const MapContext = createContext<MapContextValue>({
-  map: null,
-  mapContainer: null,
-  setMapContainer: () => {},
+  isLoaded: false,
+  mapRef: { current: null },
   addMarkers: () => {},
   flyToPhoto: () => {},
   mapLoaded: false,
+  mapContainer: null,
+  setMapContainer: () => {},
+  map: null,
 });
 
-// Hook to use map context
+// Hook to use the map context
 export const useMap = () => useContext(MapContext);
 
 // Provider component
 export const MapContextProvider = ({ children }: { children: ReactNode }) => {
-  const [map, setMap] = useState<L.Map | null>(null);
-  const [mapContainer, setMapContainerState] = useState<React.RefObject<HTMLDivElement> | null>(null);
+  // Use the Google Maps API directly with the key
+  const { isLoaded } = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: 'AIzaSyAuFKwZlhPXHCi9rtNCZuSGlEEmfN4u_2o',
+  });
+
+  const mapRef = useRef<GoogleMap | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
-  const [markers, setMarkers] = useState<L.Marker[]>([]);
-  const [markerLayer, setMarkerLayer] = useState<L.LayerGroup | null>(null);
-  
-  // Fix Leaflet icon issue in client-side rendering
-  useEffect(() => {
-    // Fix the Leaflet default icon issue that occurs in bundled environments
-    delete (L.Icon.Default.prototype as any)._getIconUrl;
-    
-    L.Icon.Default.mergeOptions({
-      iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
-      iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
-      shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
-    });
+  const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
+  const [activeMarkers, setActiveMarkers] = useState<google.maps.Marker[]>([]);
+  const [selectedPhoto, setSelectedPhoto] = useState<PhotoWithTags | null>(null);
+
+  // Set map loaded status when the map is ready
+  const onMapLoad = useCallback((map: google.maps.Map) => {
+    mapRef.current = map as any;
+    setMapInstance(map);
+    setMapLoaded(true);
+    console.log('Google Maps loaded successfully');
   }, []);
 
-  // Set map container ref
-  const setMapContainer = (ref: React.RefObject<HTMLDivElement>) => {
-    setMapContainerState(ref);
-  };
+  // Add markers to map for each photo with coordinates
+  const addMarkers = useCallback((photos: PhotoWithTags[]) => {
+    if (!mapInstance) return;
 
-  // Initialize map when container is available
-  useEffect(() => {
-    if (!mapContainer?.current || map) return;
+    // Clear existing markers
+    activeMarkers.forEach(marker => marker.setMap(null));
+    setActiveMarkers([]);
 
-    // Create the map instance
-    const newMap = L.map(mapContainer.current).setView([37.8, -96], 4); // Center on US
-
-    // Add the OpenStreetMap tiles
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(newMap);
-
-    // Create a layer group for markers
-    const newMarkerLayer = L.layerGroup().addTo(newMap);
-    
-    setMarkerLayer(newMarkerLayer);
-    setMap(newMap);
-    setMapLoaded(true);
-
-    // Return a cleanup function to properly remove the map
-    return () => {
-      if (newMap) {
-        newMap.remove();
-      }
-      setMap(null);
-      setMarkerLayer(null);
-      
-      // For debugging purposes
-      console.log('Map component unmounted, state reset');
-    };
-  }, [mapContainer, map]);
-
-  // Add markers to map
-  const addMarkers = (photos: PhotoWithTags[]) => {
-    if (!map || !markerLayer) return;
-
-    // Clear previous markers
-    markerLayer.clearLayers();
-    setMarkers([]);
-
-    // Create custom icon for markers
-    const customIcon = L.divIcon({
-      className: 'custom-div-icon',
-      html: '<div class="marker-pin bg-primary rounded-full flex items-center justify-center text-white shadow-md" style="width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path><circle cx="12" cy="13" r="3"></circle></svg></div>',
-      iconSize: [30, 30],
-      iconAnchor: [15, 15]
-    });
-
-    // Filter photos with valid coordinates and add markers
+    // Filter photos with valid coordinates
     const photosWithCoords = photos.filter(photo => photo.latitude && photo.longitude);
     
+    if (photosWithCoords.length === 0) return;
+
+    // Create bounds to fit all markers
+    const bounds = new google.maps.LatLngBounds();
+    
+    // Create new markers
     const newMarkers = photosWithCoords.map(photo => {
-      // Safely handle potentially null values
-      const lng = photo.longitude ? parseFloat(photo.longitude) : 0;
+      // Parse coordinates
       const lat = photo.latitude ? parseFloat(photo.latitude) : 0;
-
-      // Create popup content
-      const popupContent = `
-        <div class="p-2">
-          <strong class="block mb-1">${photo.title}</strong>
-          <p class="text-xs text-gray-600">${new Date(photo.uploadedAt).toLocaleDateString()}</p>
-          <p class="text-xs mt-1">Click to view details</p>
-        </div>
-      `;
-
-      // Add marker to map
-      const marker = L.marker([lat, lng], { icon: customIcon })
-        .bindPopup(popupContent)
-        .addTo(markerLayer);
-
+      const lng = photo.longitude ? parseFloat(photo.longitude) : 0;
+      const position = { lat, lng };
+      
+      // Add position to bounds
+      bounds.extend(position);
+      
+      // Create marker
+      const marker = new google.maps.Marker({
+        position,
+        map: mapInstance,
+        title: photo.title,
+        icon: {
+          path: google.maps.SymbolPath.CIRCLE,
+          fillColor: '#3b82f6', // Primary color
+          fillOpacity: 1,
+          strokeWeight: 1,
+          strokeColor: '#ffffff',
+          scale: 10,
+        }
+      });
+      
+      // Add click listener to show info window
+      marker.addListener('click', () => {
+        setSelectedPhoto(photo);
+      });
+      
       return marker;
     });
-
-    setMarkers(newMarkers);
-
-    // Fit map to markers if there are any
-    if (newMarkers.length > 0) {
-      const bounds = L.latLngBounds(
-        photosWithCoords.map(photo => {
-          const lat = photo.latitude ? parseFloat(photo.latitude) : 0;
-          const lng = photo.longitude ? parseFloat(photo.longitude) : 0;
-          return [lat, lng];
-        })
-      );
-      
-      map.fitBounds(bounds, { padding: [50, 50] });
-    }
-  };
-
-  // Fly to a specific photo
-  const flyToPhoto = (photo: PhotoWithTags) => {
-    if (!map || !photo.latitude || !photo.longitude) return;
     
-    const lng = photo.longitude ? parseFloat(photo.longitude) : 0;
-    const lat = photo.latitude ? parseFloat(photo.latitude) : 0;
+    // Set active markers
+    setActiveMarkers(newMarkers);
     
-    map.setView([lat, lng], 14, {
-      animate: true
-    });
-
-    // Find and open the popup for this photo
-    markers.forEach(marker => {
-      const markerLatLng = marker.getLatLng();
-      
-      if (markerLatLng.lat === lat && markerLatLng.lng === lng) {
-        marker.openPopup();
+    // Fit map to bounds
+    mapInstance.fitBounds(bounds);
+    
+    // Adjust zoom if too close
+    const listener = google.maps.event.addListener(mapInstance, 'idle', () => {
+      try {
+        const zoom = mapInstance.getZoom() as number | undefined;
+        if (zoom && zoom > 16) {
+          mapInstance.setZoom(16);
+        }
+        google.maps.event.removeListener(listener);
+      } catch (e) {
+        console.error('Error handling map zoom', e);
       }
     });
-  };
+  }, [mapInstance, activeMarkers]);
+
+  // Fly to a specific photo
+  const flyToPhoto = useCallback((photo: PhotoWithTags) => {
+    if (!mapInstance || !photo.latitude || !photo.longitude) return;
+    
+    const lat = photo.latitude ? parseFloat(photo.latitude) : 0;
+    const lng = photo.longitude ? parseFloat(photo.longitude) : 0;
+    
+    mapInstance.panTo({ lat, lng });
+    mapInstance.setZoom(14);
+    
+    // Find and show info window for this photo
+    const marker = activeMarkers.find(marker => {
+      const position = marker.getPosition();
+      return position && position.lat() === lat && position.lng() === lng;
+    });
+    
+    if (marker) {
+      setSelectedPhoto(photo);
+    }
+  }, [mapInstance, activeMarkers]);
+
+  // These are kept for compatibility with the existing code
+  const setMapContainer = useCallback(() => {}, []);
 
   return (
-    <MapContext.Provider value={{ 
-      map, 
-      mapContainer, 
-      setMapContainer, 
-      addMarkers, 
+    <MapContext.Provider value={{
+      isLoaded,
+      mapRef,
+      addMarkers,
       flyToPhoto,
-      mapLoaded
+      mapLoaded,
+      // Compatibility with previous implementation
+      mapContainer: null,
+      setMapContainer,
+      map: mapInstance,
     }}>
       {children}
     </MapContext.Provider>

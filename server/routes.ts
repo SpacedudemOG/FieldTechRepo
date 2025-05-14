@@ -257,6 +257,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to remove tag from photo" });
     }
   });
+  
+  // Provide the Google Maps API key
+  apiRouter.get('/map-key', (_req: Request, res: Response) => {
+    // Send the API key from environment variable
+    res.send(process.env.GOOGLE_MAPS_API_KEY || '');
+  });
 
   const httpServer = createServer(app);
   return httpServer;
