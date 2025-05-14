@@ -58,8 +58,10 @@
   }
 }
 
-.mapboxgl-ctrl-logo, .mapboxgl-ctrl-attrib {
-  display: none !important;
+/* Leaflet custom styles */
+.custom-div-icon {
+  background: transparent;
+  border: none;
 }
 
 .map-container {
