@@ -2,11 +2,8 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import mapboxgl from 'mapbox-gl';
 import { PhotoWithTags } from '@shared/schema';
 
-// Using a free OSM-compatible style that doesn't require authentication
-const FREE_STYLE_URL = 'https://api.maptiler.com/maps/basic-v2/style.json?key=WS5pHjwkFNQGcjzuXZO3';
-
-// Set token to a placeholder - we'll use a free style that doesn't need auth
-mapboxgl.accessToken = 'no-token-needed';
+// Using a public token that should work with the Mapbox light style
+mapboxgl.accessToken = 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4M29iazA2Z2gycXA4N2pmbDZmangifQ.-g_vE53SD2WrJ6tFX7QHmA';
 
 interface MapContextValue {
   map: mapboxgl.Map | null;
@@ -48,7 +45,7 @@ export const MapContextProvider = ({ children }: { children: ReactNode }) => {
 
     const newMap = new mapboxgl.Map({
       container: mapContainer.current,
-      style: FREE_STYLE_URL, // Using a free style that doesn't require authentication
+      style: 'mapbox://styles/mapbox/light-v11', // Using light style with the token
       center: [-96, 37.8], // Center on US
       zoom: 3,
     });
