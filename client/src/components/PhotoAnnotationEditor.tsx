@@ -33,7 +33,7 @@ import {
   MessageSquare
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { apiRequest, queryClient } from '@/lib/queryClient';
+import { apiRequest } from '@/lib/queryClient';
 import { 
   Annotation, 
   ANNOTATION_SYMBOLS, 
@@ -77,9 +77,12 @@ export default function PhotoAnnotationEditor({
   const [pendingAnnotation, setPendingAnnotation] = useState<{x: number, y: number} | null>(null);
   const imageContainerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const { data: annotations = [], isLoading } = useQuery<Annotation[]>({
-    queryKey: ['/api/photos', photo.id, 'annotations'],
+  const annotationQueryKey = [`/api/photos/${photo.id}/annotations`];
+
+  const { data: annotations = [], isLoading, refetch } = useQuery<Annotation[]>({
+    queryKey: annotationQueryKey,
     queryFn: async () => {
       const res = await fetch(`/api/photos/${photo.id}/annotations`);
       if (!res.ok) throw new Error('Failed to fetch annotations');
@@ -90,14 +93,10 @@ export default function PhotoAnnotationEditor({
 
   const createAnnotation = useMutation({
     mutationFn: async (data: { symbolType: SymbolType; x: number; y: number; note?: string; status?: string }) => {
-      return apiRequest(`/api/photos/${photo.id}/annotations`, {
-        method: 'POST',
-        body: JSON.stringify(data),
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return apiRequest('POST', `/api/photos/${photo.id}/annotations`, data);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/photos', photo.id, 'annotations'] });
+    onSuccess: async () => {
+      await refetch();
       toast({ title: 'Annotation added', description: 'Device marker has been placed on the photo' });
       setIsPlacing(false);
       setSelectedSymbol(null);
@@ -110,14 +109,10 @@ export default function PhotoAnnotationEditor({
 
   const updateAnnotation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<Annotation> }) => {
-      return apiRequest(`/api/annotations/${id}`, {
-        method: 'PATCH',
-        body: JSON.stringify(data),
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return apiRequest('PATCH', `/api/annotations/${id}`, data);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/photos', photo.id, 'annotations'] });
+    onSuccess: async () => {
+      await refetch();
       toast({ title: 'Annotation updated', description: 'Changes have been saved' });
       setSelectedAnnotation(null);
       setShowNoteDialog(false);
@@ -129,10 +124,10 @@ export default function PhotoAnnotationEditor({
 
   const deleteAnnotation = useMutation({
     mutationFn: async (id: number) => {
-      return apiRequest(`/api/annotations/${id}`, { method: 'DELETE' });
+      return apiRequest('DELETE', `/api/annotations/${id}`);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/photos', photo.id, 'annotations'] });
+    onSuccess: async () => {
+      await refetch();
       toast({ title: 'Annotation deleted', description: 'Device marker has been removed' });
       setSelectedAnnotation(null);
     },

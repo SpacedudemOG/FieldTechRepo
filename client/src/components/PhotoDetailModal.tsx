@@ -18,12 +18,14 @@ import {
   X, 
   Plus, 
   Bot, 
-  User 
+  User,
+  PenTool
 } from 'lucide-react';
 import mapboxgl from 'mapbox-gl';
 import { useEffect, useRef } from 'react';
 import usePhotoStorage from '@/hooks/usePhotoStorage';
 import { useToast } from '@/hooks/use-toast';
+import PhotoAnnotationEditor from './PhotoAnnotationEditor';
 
 interface PhotoDetailModalProps {
   isOpen: boolean;
@@ -36,6 +38,7 @@ const PhotoDetailModal = ({ isOpen, onClose, photo }: PhotoDetailModalProps) => 
   const [editTitle, setEditTitle] = useState(photo.title);
   const [editNotes, setEditNotes] = useState(photo.notes || '');
   const [newTag, setNewTag] = useState('');
+  const [showAnnotationEditor, setShowAnnotationEditor] = useState(false);
   const detailMapRef = useRef<HTMLDivElement>(null);
   const [detailMap, setDetailMap] = useState<mapboxgl.Map | null>(null);
   const { updatePhoto, addTagToPhoto, removeTagFromPhoto } = usePhotoStorage();
@@ -301,13 +304,13 @@ const PhotoDetailModal = ({ isOpen, onClose, photo }: PhotoDetailModalProps) => 
         
         <DialogFooter className="border-t border-gray-200 pt-3">
           <div className="flex justify-between w-full">
-            <div>
+            <div className="flex flex-wrap gap-1">
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="mr-2"
                 onClick={handleDownload}
+                data-testid="download-photo-btn"
               >
                 <Download className="h-4 w-4 mr-1" />
                 Download
@@ -316,9 +319,20 @@ const PhotoDetailModal = ({ isOpen, onClose, photo }: PhotoDetailModalProps) => 
                 type="button"
                 variant="ghost"
                 size="sm"
+                data-testid="share-photo-btn"
               >
                 <Share2 className="h-4 w-4 mr-1" />
                 Share
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setShowAnnotationEditor(true)}
+                data-testid="annotate-photo-btn"
+              >
+                <PenTool className="h-4 w-4 mr-1" />
+                Annotate
               </Button>
             </div>
             
@@ -358,6 +372,12 @@ const PhotoDetailModal = ({ isOpen, onClose, photo }: PhotoDetailModalProps) => 
           </div>
         </DialogFooter>
       </DialogContent>
+      
+      <PhotoAnnotationEditor
+        photo={photo}
+        isOpen={showAnnotationEditor}
+        onClose={() => setShowAnnotationEditor(false)}
+      />
     </Dialog>
   );
 };
