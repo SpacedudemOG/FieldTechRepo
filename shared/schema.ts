@@ -110,7 +110,44 @@ export type PhotoTag = typeof photoTags.$inferSelect;
 
 export type PhotoFilter = z.infer<typeof photoFilterSchema>;
 
+// Define Annotation schema for photo annotations with symbols
+export const annotations = pgTable("annotations", {
+  id: serial("id").primaryKey(),
+  photoId: integer("photo_id").notNull().references(() => photos.id),
+  symbolType: text("symbol_type").notNull(), // fire_alarm, security, access_control, cctv, electrical, wiring, fire_suppression
+  x: integer("x").notNull(), // X position as percentage (0-100)
+  y: integer("y").notNull(), // Y position as percentage (0-100)
+  note: text("note"), // Optional note for the annotation
+  status: text("status"), // ok, issue, warning
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertAnnotationSchema = createInsertSchema(annotations).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertAnnotation = z.infer<typeof insertAnnotationSchema>;
+export type Annotation = typeof annotations.$inferSelect;
+
+// Symbol types for field technician annotations
+export const ANNOTATION_SYMBOLS = {
+  fire_alarm: { name: 'Fire Alarm', icon: '🔔', color: '#ef4444' },
+  security: { name: 'Security', icon: '🛡️', color: '#3b82f6' },
+  access_control: { name: 'Access Control', icon: '🚪', color: '#8b5cf6' },
+  cctv: { name: 'CCTV', icon: '📹', color: '#6366f1' },
+  electrical: { name: 'Electrical', icon: '⚡', color: '#f59e0b' },
+  wiring: { name: 'Wiring', icon: '🔌', color: '#10b981' },
+  fire_suppression: { name: 'Fire Suppression', icon: '🧯', color: '#dc2626' },
+} as const;
+
+export type SymbolType = keyof typeof ANNOTATION_SYMBOLS;
+
 // Extended types that combine multiple schemas
 export type PhotoWithTags = Photo & {
   tags: Tag[];
+};
+
+export type PhotoWithTagsAndAnnotations = PhotoWithTags & {
+  annotations: Annotation[];
 };

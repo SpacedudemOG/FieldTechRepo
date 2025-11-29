@@ -4,7 +4,8 @@ import {
   tags, type Tag, type InsertTag,
   photoTags, type PhotoTag, type InsertPhotoTag,
   type PhotoWithTags,
-  type PhotoFilter
+  type PhotoFilter,
+  type Annotation, type InsertAnnotation
 } from "@shared/schema";
 
 export interface IStorage {
@@ -33,6 +34,12 @@ export interface IStorage {
   removeTagFromPhoto(photoId: number, tagId: number): Promise<boolean>;
   getTagsForPhoto(photoId: number): Promise<Tag[]>;
   getPhotosWithTag(tagId: number): Promise<Photo[]>;
+
+  // Annotation methods
+  getAnnotationsForPhoto(photoId: number): Promise<Annotation[]>;
+  createAnnotation(annotation: InsertAnnotation): Promise<Annotation>;
+  updateAnnotation(id: number, data: Partial<InsertAnnotation>): Promise<Annotation | undefined>;
+  deleteAnnotation(id: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -40,10 +47,12 @@ export class MemStorage implements IStorage {
   private photos: Map<number, Photo>;
   private tags: Map<number, Tag>;
   private photoTags: Map<number, PhotoTag>;
+  private annotations: Map<number, Annotation>;
   private currentUserId: number;
   private currentPhotoId: number;
   private currentTagId: number;
   private currentPhotoTagId: number;
+  private currentAnnotationId: number;
   
   // Initialize sample data for testing
   private initializeSampleData = async () => {
@@ -123,10 +132,12 @@ export class MemStorage implements IStorage {
     this.photos = new Map();
     this.tags = new Map();
     this.photoTags = new Map();
+    this.annotations = new Map();
     this.currentUserId = 1;
     this.currentPhotoId = 1;
     this.currentTagId = 1;
     this.currentPhotoTagId = 1;
+    this.currentAnnotationId = 1;
     
     // Initialize with sample data
     this.initializeSampleData();
@@ -448,6 +459,35 @@ export class MemStorage implements IStorage {
       .map(photoTag => photoTag.photoId);
     
     return photoIds.map(id => this.photos.get(id)).filter(Boolean) as Photo[];
+  }
+
+  // Annotation methods
+  async getAnnotationsForPhoto(photoId: number): Promise<Annotation[]> {
+    return Array.from(this.annotations.values())
+      .filter(annotation => annotation.photoId === photoId);
+  }
+
+  async createAnnotation(insertAnnotation: InsertAnnotation): Promise<Annotation> {
+    const id = this.currentAnnotationId++;
+    const createdAt = new Date();
+    const annotation: Annotation = { ...insertAnnotation, id, createdAt };
+    this.annotations.set(id, annotation);
+    return annotation;
+  }
+
+  async updateAnnotation(id: number, data: Partial<InsertAnnotation>): Promise<Annotation | undefined> {
+    const annotation = this.annotations.get(id);
+    if (!annotation) return undefined;
+
+    const updatedAnnotation = { ...annotation, ...data };
+    this.annotations.set(id, updatedAnnotation);
+    return updatedAnnotation;
+  }
+
+  async deleteAnnotation(id: number): Promise<boolean> {
+    if (!this.annotations.has(id)) return false;
+    this.annotations.delete(id);
+    return true;
   }
 }
 
