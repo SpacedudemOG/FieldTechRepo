@@ -10,7 +10,8 @@ import { getSimilarPhotos, categorizePhotos, getRecommendationsByQuery } from ".
 import { 
   insertPhotoSchema, 
   insertTagSchema, 
-  photoFilterSchema 
+  photoFilterSchema,
+  insertAnnotationSchema
 } from "@shared/schema";
 
 // Configure multer for in-memory storage
@@ -311,6 +312,101 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(recommendations);
     } catch (error) {
       res.status(500).json({ message: "Failed to get recommendations", error: String(error) });
+    }
+  });
+
+  // Annotation Endpoints
+
+  // Get all annotations for a photo
+  apiRouter.get('/photos/:photoId/annotations', async (req: Request, res: Response) => {
+    try {
+      const photoId = parseInt(req.params.photoId);
+      
+      if (isNaN(photoId)) {
+        return res.status(400).json({ message: "Invalid photo ID" });
+      }
+
+      const photo = await storage.getPhoto(photoId);
+      if (!photo) {
+        return res.status(404).json({ message: "Photo not found" });
+      }
+
+      const annotations = await storage.getAnnotationsForPhoto(photoId);
+      res.json(annotations);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch annotations" });
+    }
+  });
+
+  // Create a new annotation
+  apiRouter.post('/photos/:photoId/annotations', async (req: Request, res: Response) => {
+    try {
+      const photoId = parseInt(req.params.photoId);
+      
+      if (isNaN(photoId)) {
+        return res.status(400).json({ message: "Invalid photo ID" });
+      }
+
+      const photo = await storage.getPhoto(photoId);
+      if (!photo) {
+        return res.status(404).json({ message: "Photo not found" });
+      }
+
+      const annotationData = {
+        ...req.body,
+        photoId
+      };
+
+      const validatedData = insertAnnotationSchema.parse(annotationData);
+      const annotation = await storage.createAnnotation(validatedData);
+      res.status(201).json(annotation);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid annotation data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create annotation" });
+    }
+  });
+
+  // Update an annotation
+  apiRouter.patch('/annotations/:id', async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid annotation ID" });
+      }
+
+      const updatedAnnotation = await storage.updateAnnotation(id, req.body);
+      
+      if (!updatedAnnotation) {
+        return res.status(404).json({ message: "Annotation not found" });
+      }
+
+      res.json(updatedAnnotation);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update annotation" });
+    }
+  });
+
+  // Delete an annotation
+  apiRouter.delete('/annotations/:id', async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid annotation ID" });
+      }
+
+      const deleted = await storage.deleteAnnotation(id);
+      
+      if (!deleted) {
+        return res.status(404).json({ message: "Annotation not found" });
+      }
+
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete annotation" });
     }
   });
 
